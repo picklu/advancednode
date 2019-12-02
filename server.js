@@ -7,6 +7,7 @@ const session = require('express-session');
 const passport = require('passport');
 const ObjectID = require('mongodb').ObjectID;
 const mongo = require('mongodb').MongoClient;
+const LocalStrategy = require('passport-local');
 
 const app = express();
 
@@ -25,28 +26,42 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-mongo.connect(process.env.DATABASE, (err, db) => {
-  if (err) {
-    console.log('Database error: ' + err);
-  }
-  else {
-    console.log('Successful database connection');
+mongo.connect(process.env.DATABASE,
+  { useUnifiedTopology: true },
+  (err, db) => {
+    if (err) {
+      console.log('Database error: ' + err);
+    }
+    else {
+      console.log('Successful database connection');
 
-    // serialization and app.listen
-    passport.serializeUser((user, done) => {
-      done(null, user._id);
-    });
+      // serialization and app.listen
+      passport.serializeUser((user, done) => {
+        done(null, user._id);
+      });
 
-    passport.deserializeUser((id, done) => {
-      db.collection('users').findOne(
-        { _id: new ObjectID(id) },
-        (err, doc) => {
-          done(null, doc);
+      passport.deserializeUser((id, done) => {
+        db.collection('users').findOne(
+          { _id: new ObjectID(id) },
+          (err, doc) => {
+            done(null, doc);
+          }
+        );
+      });
+
+      passport.use(new LocalStrategy(
+        (username, password, done) => {
+          db.collection('users').findOne({ username: username }, (err, user) => {
+            console.log('User ' + username + ' attempted to log in.');
+            if (err) { return done(err) }
+            if (!user) { return done(null, false); }
+            if (password !== user.password) { return done(null, false); }
+            return done(null, user);
+          })
         }
-      );
-    });
-  }
-});
+      ))
+    }
+  });
 
 
 app.set('view engine', 'pug')
