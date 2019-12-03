@@ -16,6 +16,8 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.set('view engine', 'pug');
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: true,
@@ -28,12 +30,14 @@ app.use(passport.session());
 
 mongo.connect(process.env.DATABASE,
   { useUnifiedTopology: true },
-  (err, db) => {
+  (err, client) => {
     if (err) {
       console.log('Database error: ' + err);
     }
     else {
       console.log('Successful database connection');
+
+      const db = client.db('advancednode');
 
       // serialization and app.listen
       passport.serializeUser((user, done) => {
@@ -60,17 +64,21 @@ mongo.connect(process.env.DATABASE,
           })
         }
       ))
+
+      app.route('/')
+        .get((req, res) => {
+          res.render(process.cwd() + '/views/pug/index.pug', { title: 'Hello', message: 'Please login', showLogin: true });
+        });
+
+      app.route('/login')
+        .post(passport.authenticate('local', { failureRedirect: '/' }),
+          (req, res) => {
+            res.render(process.cwd() + '/views/pug/profile.pug', {});
+          });
+
+      app.listen(process.env.PORT || 3000, () => {
+        console.log("Listening on port " + process.env.PORT);
+      });
     }
   });
 
-
-app.set('view engine', 'pug')
-
-app.route('/')
-  .get((req, res) => {
-    res.render(process.cwd() + '/views/pug/index.pug', { title: 'Hello', message: 'Please login' });
-  });
-
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Listening on port " + process.env.PORT);
-});
