@@ -40,7 +40,7 @@ module.exports = function (app, db) {
         (accessToken, refreshToken, profile, done) => {
             db.collection('users').findOne({ username: profile.username }, (err, user) => {
                 console.log('User ' + profile.username + ' attempted to log in.');
-                if (err) { return done(err) }
+                if (err) { return done(err); }
                 if (!user) {
                     db.collection('users').insertOne({
                         username: profile.username,

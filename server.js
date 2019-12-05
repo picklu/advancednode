@@ -29,6 +29,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.route('/auth/github')
+  .get(passport.authenticate('github'));
+
+app.route('/auth/github/callback')
+  .get(passport.authenticate('github', { failureRedirect: '/' }),
+    (req, res) => {
+      res.redirect('/profile');
+    });
+
 mongo.connect(process.env.DATABASE,
   { useUnifiedTopology: true },
   (err, client) => {
