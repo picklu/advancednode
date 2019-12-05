@@ -33,13 +33,14 @@ module.exports = function (app, db) {
                         const hash = bcrypt.hashSync(req.body.password, saltRounds);
                         db.collection('users').insertOne({
                             username: req.body.username,
-                            password: hash
+                            password: hash,
+                            authenticate: 'local'
                         }, (err, doc) => {
                             if (err) {
                                 res.redirect('/');
                             }
                             else {
-                                next(null, user);
+                                next(null, doc);
                             }
                         })
                     }
@@ -66,6 +67,14 @@ module.exports = function (app, db) {
         .get((req, res) => {
             req.logout();
             res.redirect('/');
+        });
+
+    app.route('/auth/github')
+        .get(passport.authenticate('github'));
+
+    app.route('/auth/github/callback')
+        .get(passport.authenticate('github', { failureRedirect: '/' }), (req, res) => {
+            res.redirect('/profile');
         });
 
     app.use((req, res, next) => {
