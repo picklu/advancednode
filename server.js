@@ -6,12 +6,16 @@ const session = require('express-session');
 const passport = require('passport');
 const mongo = require('mongodb').MongoClient;
 const GitHubStrategy = require('passport-github').Strategy;
+const cors = require('cors');
+
 
 const auth = require('./auth');
 const routes = require('./routes');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
 
 const app = express();
+
+app.use(cors());
 
 fccTesting(app); //For FCC testing purposes
 app.use('/public', express.static(process.cwd() + '/public'));
@@ -56,7 +60,7 @@ mongo.connect(process.env.DATABASE,
       passport.use(new GitHubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: ''
+        callbackURL: process.env.CALLBACK_URL
       },
         function(accessToken, refreshToken, profile, cb) {
           console.log(profile);
@@ -83,8 +87,8 @@ mongo.connect(process.env.DATABASE,
         }
       ));
 
-      const server = require('http').createServer(app);
-      const io = require('socket.io')(server);
+      const http = require('http').createServer(app);
+      const io = require('socket.io')(http);
       io.on('connection', socket => {
         console.log('A user has connected');
       });
