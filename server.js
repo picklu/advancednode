@@ -13,20 +13,20 @@ passport.use(new GitHubStrategy({
   callbackURL: process.env.CALLBACK_URL
 },
   (accessToken, refreshToken, profile, done) => {
-    db.collection('users').findOne({ username: profile.username }, (err, user) => {
-      console.log('User ' + profile.username + ' attempted to log in.');
-      if (err) { return done(err); }
-      if (!user) {
-        db.collection('users').insertOne({
-          username: profile.username,
-          authenticate: 'github'
-        }, (err, doc) => {
-          if (err) { return done(err); }
-          return done(null, doc.ops[0]);
-        })
-      }
-      return done(null, user);
-    });
+    // db.collection('users').findOne({ username: profile.username }, (err, user) => {
+    console.log('User ' + profile.username + ' attempted to log in.');
+    //   if (err) { return done(err); }
+    //   if (!user) {
+    //     db.collection('users').insertOne({
+    //       username: profile.username,
+    //       authenticate: 'github'
+    //     }, (err, doc) => {
+    //       if (err) { return done(err); }
+    //       return done(null, doc.ops[0]);
+    //     })
+    //   }
+    //   return done(null, user);
+    // });
   })
 );
 
