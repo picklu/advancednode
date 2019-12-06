@@ -8,7 +8,6 @@ const mongo = require('mongodb').MongoClient;
 const GitHubStrategy = require('passport-github').Strategy;
 const cors = require('cors');
 
-
 const auth = require('./auth');
 const routes = require('./routes');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
@@ -87,10 +86,13 @@ mongo.connect(process.env.DATABASE,
         }
       ));
 
+      let currentUsers = 0;
       const http = require('http').createServer(app);
       const io = require('socket.io')(http);
       io.on('connection', socket => {
         console.log('A user has connected');
+        currentUsers++;
+        io.emit('user count', currentUsers);
       });
 
       app.listen(process.env.PORT || 3000, () => {
