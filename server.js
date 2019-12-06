@@ -93,6 +93,12 @@ mongo.connect(process.env.DATABASE,
         console.log('A user has connected');
         currentUsers++;
         io.emit('user count', currentUsers);
+        
+        socket.on('disconnect', () => { 
+          console.log('A user is disconnected');
+          currentUsers--;
+          io.emit('user count', currentUsers);
+        });
       });
 
       app.listen(process.env.PORT || 3000, () => {
@@ -100,4 +106,3 @@ mongo.connect(process.env.DATABASE,
       });
     }
   });
-
