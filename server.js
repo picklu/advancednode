@@ -7,29 +7,6 @@ const passport = require('passport');
 const mongo = require('mongodb').MongoClient;
 const GitHubStrategy = require('passport-github').Strategy;
 
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL
-},
-  (accessToken, refreshToken, profile, done) => {
-    // db.collection('users').findOne({ username: profile.username }, (err, user) => {
-    console.log('User ' + profile.username + ' attempted to log in.');
-    //   if (err) { return done(err); }
-    //   if (!user) {
-    //     db.collection('users').insertOne({
-    //       username: profile.username,
-    //       authenticate: 'github'
-    //     }, (err, doc) => {
-    //       if (err) { return done(err); }
-    //       return done(null, doc.ops[0]);
-    //     })
-    //   }
-    //   return done(null, user);
-    // });
-  })
-);
-
 const auth = require('./auth');
 const routes = require('./routes');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
@@ -75,6 +52,36 @@ mongo.connect(process.env.DATABASE,
       auth(app, db);
 
       routes(app, db);
+
+      passport.use(new GitHubStrategy({
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: ''
+      },
+        function(accessToken, refreshToken, profile, cb) {
+          console.log(profile);
+          db.collection('socialusers').findAndModify(
+        {id: profile.id},
+        {},
+        {$setOnInsert:{
+          id: profile.id,
+          name: profile.displayName || 'John Doe',
+          photo: profile.photos[0].value || '',
+          email: profile.emails[0].value || 'No public email',
+          created_on: new Date(),
+          provider: profile.provider || ''
+        },$set:{
+          last_login: new Date()
+        },$inc:{
+          login_count: 1
+        }},
+        {upsert:true, new: true},
+        (err, doc) => {
+          return cb(null, doc.value);
+        }
+      );
+        }
+      ));
 
       app.listen(process.env.PORT || 3000, () => {
         console.log("Listening on port " + process.env.PORT);
