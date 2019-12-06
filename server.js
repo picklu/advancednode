@@ -83,6 +83,12 @@ mongo.connect(process.env.DATABASE,
         }
       ));
 
+      const server = require('http').createServer(app);
+      const io = require('socket.io')(server);
+      io.on('connection', socket => {
+        console.log('A user has connected');
+      });
+
       app.listen(process.env.PORT || 3000, () => {
         console.log("Listening on port " + process.env.PORT);
       });
