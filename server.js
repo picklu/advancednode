@@ -112,18 +112,18 @@ mongo.connect(process.env.DATABASE,
             connected: true
           }
         );
+      });
 
-        socket.on('disconnect', () => {
-          console.log('A user is disconnected');
-          currentUsers--;
-          io.emit('user',
-            {
-              name: socket.request.user.name,
-              currentUsers,
-              connected: false
-            }
-          );
-        });
+      io.on('disconnect', () => {
+        console.log('A user is disconnected');
+        currentUsers--;
+        io.emit('user',
+          {
+            name: socket.request.user.name,
+            currentUsers,
+            connected: false
+          }
+        );
       });
 
       app.listen(process.env.PORT || 3000, () => {
