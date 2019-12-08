@@ -103,27 +103,16 @@ mongo.connect(process.env.DATABASE,
       }))
 
       io.on('connection', socket => {
-        console.log('A user has connected');
+        console.log(socket.req.user.name + ' has connected');
         currentUsers++;
-        io.emit('user',
-          {
-            name: socket.request.user.name,
-            currentUsers,
-            connected: true
-          }
+        io.emit('user', { name: socket.request.user.name, currentUsers, connected: true }
         );
-      });
-
-      io.on('disconnect', socket => {
-        console.log('A user is disconnected');
-        currentUsers--;
-        io.emit('user',
-          {
-            name: socket.request.user.name,
-            currentUsers,
-            connected: false
-          }
-        );
+        socket.on('disconnect', () => {
+          console.log('A user is disconnected');
+          currentUsers--;
+          io.emit('user', { name: socket.request.user.name, currentUsers, connected: false }
+          );
+        });
       });
 
       app.listen(process.env.PORT || 3000, () => {
