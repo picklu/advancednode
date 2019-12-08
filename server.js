@@ -114,7 +114,7 @@ mongo.connect(process.env.DATABASE,
         );
       });
 
-      io.on('disconnect', () => {
+      io.on('disconnect', socket => {
         console.log('A user is disconnected');
         currentUsers--;
         io.emit('user',
