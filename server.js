@@ -8,8 +8,8 @@ const passportSocketIo = require('passport.socketio');
 const mongo = require('mongodb').MongoClient;
 const GitHubStrategy = require('passport-github').Strategy;
 const cookieParser = require('cookie-parser');
-const http = require('http').Server();
-const io = require('socket.io')(http);
+const http = require('http');
+const socketIo = require('socket.io');
 const cors = require('cors');
 
 const auth = require('./auth');
@@ -17,6 +17,8 @@ const routes = require('./routes');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
 
 const app = express();
+const server = http.Server(app);
+const io = socketIo(server);
 const sessionStore = new session.MemoryStore();
 
 app.use(cors());
